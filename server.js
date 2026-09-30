@@ -202,8 +202,43 @@ async function main() {
   console.log("Myanmar 2D AutoServer completed successfully.");
 }
 
-main().catch(err => {
-  console.error("AutoServer ERROR:");
-  console.error(err);
-  process.exitCode = 1;
-});
+if (process.env.RENDER === "true") {
+  const http = require("http");
+
+  const PORT = process.env.PORT || 10000;
+  let running = false;
+
+  const runAutoLive = async () => {
+    if (running) return;
+
+    running = true;
+
+    try {
+      await main();
+    } catch (err) {
+      console.error("AutoServer ERROR:");
+      console.error(err);
+    } finally {
+      running = false;
+    }
+  };
+
+  http.createServer((req, res) => {
+    res.writeHead(200, {
+      "Content-Type": "text/plain"
+    });
+
+    res.end("Myanmar 2D AutoServer is running");
+  }).listen(PORT, "0.0.0.0", () => {
+    console.log("AutoServer Web Service started on port " + PORT);
+    runAutoLive();
+    setInterval(runAutoLive, 3000);
+  });
+
+} else {
+  main().catch(err => {
+    console.error("AutoServer ERROR:");
+    console.error(err);
+    process.exitCode = 1;
+  });
+}
