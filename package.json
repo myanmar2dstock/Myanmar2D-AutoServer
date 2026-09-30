@@ -1,1 +1,12 @@
-
+{
+  "name": "myanmar2d-autoserver",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Myanmar 2D automatic live value synchronizer",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
