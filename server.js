@@ -19,9 +19,7 @@ function request(url, options = {}, body = null) {
 
       res.on("end", () => {
         if (res.statusCode < 200 || res.statusCode >= 300) {
-          reject(
-            new Error(`HTTP ${res.statusCode}: ${data}`)
-          );
+          reject(new Error(`HTTP ${res.statusCode}: ${data}`));
           return;
         }
 
@@ -113,7 +111,8 @@ async function main() {
     API_URL + "?t=" + Date.now(),
     {
       headers: {
-        "Cache-Control": "no-cache"
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
       }
     }
   );
@@ -150,14 +149,18 @@ async function main() {
       updates["1201"] = record;
     }
 
-    if (time.startsWith("16:30")) {
+    // 04:30 PM
+    if (
+      time.startsWith("16:30") ||
+      time.startsWith("16:31")
+    ) {
       updates["0431"] = record;
     }
   }
 
   const live = payload?.live;
 
-  if (live?.set && live?.value) {
+  if (live?.set != null && live?.value != null) {
     const live2d = calc2D(
       live.set,
       live.value
@@ -195,7 +198,11 @@ async function main() {
       "Updated live2d/" +
         key +
         " = " +
-        value.value
+        value.value +
+        " | SET=" +
+        value.set +
+        " | VALUE=" +
+        value.marketValue
     );
   }
 
@@ -230,9 +237,15 @@ if (process.env.RENDER === "true") {
 
     res.end("Myanmar 2D AutoServer is running");
   }).listen(PORT, "0.0.0.0", () => {
-    console.log("AutoServer Web Service started on port " + PORT);
+    console.log(
+      "AutoServer Web Service started on port " + PORT
+    );
+
+    // Run immediately
     runAutoLive();
-    setInterval(runAutoLive, 3000);
+
+    // Check SET / VALUE every 1 second
+    setInterval(runAutoLive, 1000);
   });
 
 } else {
